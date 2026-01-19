@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>翻牌对战 - 房间联机版</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+    <!-- 房间选择界面（初始显示） -->
+    <div id="room-selection" class="room-selection">
+        <header>
+            <h1>翻牌对战 - 房间联机版</h1>
+            <p class="subtitle">创建或加入房间，与好友进行实时对战</p>
+        </header>
+
+        <div class="room-options">
+            <div class="room-option create-room">
+                <h2>创建房间</h2>
+                <p>创建一个新房间，邀请好友加入</p>
+                <div class="form-group">
+                    <label for="player-name-create">你的昵称：</label>
+                    <input type="text" id="player-name-create" placeholder="请输入昵称" maxlength="10" value="玩家" />
+                </div>
+                <button id="create-room-btn" class="room-btn create-btn">创建房间</button>
+            </div>
+
+            <div class="room-divider">
+                <div class="divider-line"></div>
+                <div class="divider-text">或</div>
+                <div class="divider-line"></div>
+            </div>
+
+            <div class="room-option join-room">
+                <h2>加入房间</h2>
+                <p>输入房间码加入已有房间</p>
+                <div class="form-group">
+                    <label for="player-name-join">你的昵称：</label>
+                    <input type="text" id="player-name-join" placeholder="请输入昵称" maxlength="10" value="玩家" />
+                </div>
+                <div class="form-group">
+                    <label for="room-code">房间码：</label>
+                    <input type="text" id="room-code" placeholder="请输入4位数字" maxlength="4" pattern="\d{4}" />
+                </div>
+                <button id="join-room-btn" class="room-btn join-btn">加入房间</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>游戏说明</h3>
+            <ul>
+                <li>每局游戏需要2位玩家</li>
+                <li>房间码为4位数字，创建房间后分享给好友</li>
+                <li>游戏支持多房间同时进行</li>
+                <li>游戏结束后可重复对战，战绩计入排行榜</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>版本: 2.0.0 | 支持房间系统 | 适配移动设备</p>
+        </footer>
+    </div>
+
+    <!-- 游戏界面（初始隐藏） -->
+    <div id="game-interface" class="game-interface" style="display: none;">
+        <header>
+            <h1>翻牌对战</h1>
+            <div class="room-info">
+                <div class="room-code-display" id="room-code-display">房间码: <span id="room-code-value">----</span></div>
+                <div class="player-info" id="player-info">等待连接...</div>
+                <div class="room-status" id="room-status">等待另一位玩家加入...</div>
+                <div class="room-controls">
+                    <button id="refresh-room-btn" class="refresh-btn">刷新房间</button>
+                    <button id="leave-room-btn" class="leave-btn">离开房间</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="game-section">
+                <h2 id="round">第 1 张牌</h2>
+
+                <div class="table">
+                    <div class="player top">
+                        <div class="label">对手</div>
+                        <div class="hand" id="opponent"></div>
+                        <div class="penalty-label">惩罚牌</div>
+                        <div class="penalty" id="penalty-op"></div>
+                    </div>
+
+                    <div class="player bottom">
+                        <div class="label">你</div>
+                        <div class="hand" id="self"></div>
+                        <div class="penalty-label">惩罚牌</div>
+                        <div class="penalty" id="penalty-self"></div>
+                    </div>
+                </div>
+
+                <div class="actions" id="actions"></div>
+            </div>
+
+            <div class="sidebar">
+                <div class="room-players">
+                    <h3>房间玩家</h3>
+                    <ul id="player-list">
+                        <li>等待玩家加入...</li>
+                    </ul>
+                </div>
+                
+                <div class="leaderboard" id="leaderboard-container">
+                    <h3>排行榜</h3>
+                    <p>等待数据...</p>
+                </div>
+                
+                <div class="instructions">
+                    <h3>游戏规则</h3>
+                    <ul>
+                        <li>每回合猜测自己的一张牌</li>
+                        <li>猜错则牌进入惩罚堆，并补充新牌</li>
+                        <li>五回合后比较双方惩罚牌数量，少者胜利</li>
+                        <li>游戏结束后可点击"重新开始"再次游玩</li>
+                        <li>胜利次数会计入排行榜</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>房间系统 | 实时对战 | 移动端适配</p>
+        </footer>
+    </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

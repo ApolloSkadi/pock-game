@@ -1,0 +1,734 @@
+/* 翻牌对战游戏 - 房间联机版样式 */
+
+/* 基础样式 */
+body {
+    background: radial-gradient(#145, #012);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 通用头部样式 */
+header {
+    text-align: center;
+    padding: 20px 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+    margin: 10px 0 0;
+    color: #b0bec5;
+    font-size: 1rem;
+}
+
+/* 房间选择界面 */
+.room-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.room-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    width: 100%;
+    margin: 30px 0;
+    justify-content: center;
+}
+
+.room-option {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.room-option h2 {
+    color: #ffcc80;
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.room-option p {
+    color: #b0bec5;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #81c784;
+    font-size: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4fc3f7;
+}
+
+.room-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.divider-text {
+    padding: 0 15px;
+    color: #b0bec5;
+    font-size: 0.9rem;
+}
+
+/* 房间按钮 */
+.room-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.create-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.create-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1f618d);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.join-btn {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+}
+
+.join-btn:hover {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+}
+
+/* 游戏界面 */
+.game-interface {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.room-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.room-code-display {
+    font-size: 1.1rem;
+    color: #ffcc80;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 204, 128, 0.3);
+}
+
+.room-code-value {
+    font-weight: bold;
+    color: #ff9800;
+}
+
+.player-info {
+    font-size: 1.1rem;
+    color: #4fc3f7;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+.room-status {
+    font-size: 1rem;
+    color: #81c784;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* 房间控制按钮容器 */
+.room-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.refresh-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #1f618d);
+    transform: translateY(-2px);
+}
+
+.leave-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.leave-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+}
+
+/* 主内容区域布局 */
+.main-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+.game-section {
+    flex: 3;
+    min-width: 300px;
+}
+
+.sidebar {
+    flex: 1;
+    min-width: 300px;
+}
+
+/* 游戏区域样式 */
+h2#round {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ffcc80;
+    text-align: center;
+}
+
+.table {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.player {
+    margin: 15px 0;
+}
+
+.player.top {
+    margin-top: 0;
+}
+
+.player.bottom {
+    margin-bottom: 0;
+}
+
+.label {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #81c784;
+    text-align: center;
+}
+
+.penalty-label {
+    font-size: 0.9rem;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #ff8a80;
+    text-align: center;
+}
+
+/* 手牌和惩罚牌区域 */
+.hand, .penalty {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-height: 90px;
+}
+
+/* 卡片样式 */
+.card {
+    width: 60px;
+    height: 85px;
+    margin: 4px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.back {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 2px solid #7f8c8d;
+}
+
+.front {
+    background: linear-gradient(135deg, #ffffff, #f5f5f5);
+    color: #2c3e50;
+    border: 2px solid #bdc3c7;
+}
+
+.red {
+    color: #e74c3c;
+}
+
+.penalty .card {
+    opacity: 0.8;
+    transform: scale(0.9);
+}
+
+/* 操作按钮区域 */
+.actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    min-height: 50px;
+}
+
+.actions button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+    min-width: 100px;
+    flex: 1;
+    max-width: 150px;
+}
+
+.actions button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.actions button:active {
+    transform: scale(0.98);
+}
+
+.left {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.right {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+}
+
+.restart-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 12px 25px !important;
+    font-size: 1.1rem !important;
+    max-width: 200px !important;
+}
+
+/* 侧边栏样式 */
+.sidebar > div {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar h3 {
+    color: #ffcc80;
+    margin-top: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+/* 房间玩家列表 */
+.room-players ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.room-players li {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #4fc3f7;
+}
+
+.room-players li:last-child {
+    margin-bottom: 0;
+}
+
+/* 排行榜样式 */
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.leaderboard-table th {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 6px;
+    text-align: center;
+    color: #81c784;
+    border-bottom: 2px solid #4caf50;
+    font-weight: bold;
+}
+
+.leaderboard-table td {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaderboard-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-table tr:nth-child(1) {
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.leaderboard-table tr:nth-child(2) {
+    background: rgba(192, 192, 192, 0.1);
+}
+
+.leaderboard-table tr:nth-child(3) {
+    background: rgba(205, 127, 50, 0.1);
+}
+
+/* 游戏说明样式 */
+.instructions ul {
+    padding-left: 20px;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.instructions li {
+    margin-bottom: 8px;
+    color: #b0bec5;
+}
+
+.instructions p {
+    line-height: 1.6;
+    color: #b0bec5;
+    font-size: 0.9rem;
+}
+
+/* 页脚样式 */
+footer {
+    text-align: center;
+    padding: 15px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    color: #90a4ae;
+    font-size: 0.8rem;
+    margin-top: auto;
+}
+
+/* 移动端响应式设计 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.7rem;
+    }
+    
+    .room-option {
+        min-width: 100%;
+        padding: 20px;
+    }
+    
+    .room-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .room-code-display,
+    .player-info,
+    .room-status {
+        width: 100%;
+        text-align: center;
+        margin: 5px 0;
+    }
+    
+    .leave-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .main-content {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    .game-section, .sidebar {
+        min-width: 100%;
+    }
+    
+    .card {
+        width: 50px;
+        height: 75px;
+        font-size: 18px;
+        margin: 3px;
+    }
+    
+    .hand, .penalty {
+        min-height: 80px;
+    }
+    
+    .actions button {
+        min-width: 80px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .restart-btn {
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
+    }
+    
+    .sidebar > div {
+        padding: 15px;
+    }
+    
+    .leaderboard-table {
+        font-size: 0.8rem;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 6px 4px;
+    }
+}
+
+/* 超小屏幕（手机竖屏） */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .room-selection {
+        padding: 15px 10px;
+    }
+    
+    .room-option h2 {
+        font-size: 1.3rem;
+    }
+    
+    .form-group input {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .room-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+    
+    .card {
+        width: 45px;
+        height: 68px;
+        font-size: 16px;
+        margin: 2px;
+    }
+    
+    .hand, .penalty {
+        min-height: 70px;
+    }
+    
+    .actions button {
+        min-width: 70px;
+        padding: 7px 12px;
+        font-size: 0.85rem;
+    }
+    
+    h2#round {
+        font-size: 1.3rem;
+    }
+    
+    .label {
+        font-size: 1rem;
+    }
+    
+    .instructions ul {
+        font-size: 0.85rem;
+        padding-left: 15px;
+    }
+}
+
+/* 横屏适配 */
+@media (max-height: 600px) and (orientation: landscape) {
+    .room-selection {
+        padding: 10px;
+    }
+    
+    .room-options {
+        flex-direction: row;
+        margin: 20px 0;
+    }
+    
+    .room-option {
+        min-height: auto;
+    }
+    
+    .card {
+        width: 40px;
+        height: 60px;
+        font-size: 16px;
+    }
+    
+    .hand, .penalty {
+        min-height: 65px;
+    }
+    
+    .main-content {
+        padding: 10px;
+    }
+}
+
+/* 开始游戏按钮样式 */
+.start-btn {
+    display: block;
+    width: 80%;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 15px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.start-btn:hover {
+    background: linear-gradient(135deg, #f57c00, #e65100);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+}
+
+.start-btn:active {
+    transform: translateY(1px);
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .actions button,
+    .room-btn,
+    .leave-btn,
+    .start-btn {
+        min-height: 44px; /* iOS推荐最小触摸目标尺寸 */
+    }
+    
+    .card {
+        min-height: 60px;
+    }
+    
+    .form-group input {
+        min-height: 44px;
+    }
+}

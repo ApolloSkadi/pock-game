@@ -40,7 +40,6 @@ const ThreePileGame = () => {
           <>
             <span className="card-rank">{card.rank}</span>
             <span className={`card-suit ${suitClass} ${suitSpecificClass}`}>{card.suit}</span>
-            {card.isRed && <span className="red-indicator" />}
           </>
         )}
       </div>
@@ -220,7 +219,6 @@ const ThreePileGame = () => {
                   <div key={index} className="card front">
                     <span className="card-rank">{card.rank}</span>
                     <span className={`card-suit ${suitClass} ${suitSpecificClass}`}>{card.suit}</span>
-                    {card.isRed && <span className="red-indicator" />}
                   </div>
                 );
               })

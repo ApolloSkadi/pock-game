@@ -8,11 +8,18 @@ const FlipCardGame = () => {
 
   const renderCard = (card, index, showAll = false) => {
     const isFaceUp = card.faceUp || showAll;
+    // 确定花色类名
+    const suitClass = card.suit === '♥' || card.suit === '♦' ? 'suit-red' : 'suit-black';
+    const suitSpecificClass = card.suit === '♥' ? 'suit-heart' : 
+                             card.suit === '♦' ? 'suit-diamond' :
+                             card.suit === '♠' ? 'suit-spade' : 'suit-club';
+    
     return (
       <div key={index} className={`card ${isFaceUp ? 'front' : 'back'}`}>
         {isFaceUp && (
           <>
-            {card.rank}{card.suit}
+            <span className="card-rank">{card.rank}</span>
+            <span className={`card-suit ${suitClass} ${suitSpecificClass}`}>{card.suit}</span>
             {card.isRed && <span className="red-indicator" />}
           </>
         )}

@@ -21,6 +21,11 @@ const ThreePileGame = () => {
 
     const cardClasses = `card ${isFaceUp ? 'front' : 'back'} ${isSelected ? 'selected' : ''}`;
     const cardStyle = isSelected ? { boxShadow: '0 0 15px #ffcc00' } : {};
+    // 确定花色类名
+    const suitClass = card.isRed ? 'red-suit' : 'black-suit';
+    const suitSpecificClass = card.suit === '♥' ? 'suit-heart' : 
+                             card.suit === '♦' ? 'suit-diamond' :
+                             card.suit === '♠' ? 'suit-spade' : 'suit-club';
 
     return (
       <div
@@ -33,7 +38,8 @@ const ThreePileGame = () => {
       >
         {isFaceUp && (
           <>
-            {card.rank}{card.suit || ''}
+            <span className="card-rank">{card.rank}</span>
+            <span className={`card-suit ${suitClass} ${suitSpecificClass}`}>{card.suit}</span>
             {card.isRed && <span className="red-indicator" />}
           </>
         )}
@@ -205,12 +211,19 @@ const ThreePileGame = () => {
           <h4>出牌区</h4>
           <div id="played-cards">
             {game.lastPlay && game.lastPlay.type !== 'pass' ? (
-              game.lastPlay.cards.map((card, index) => (
-                <div key={index} className="card front">
-                  {card.rank}{card.suit || ''}
-                  {card.isRed && <span className="red-indicator" />}
-                </div>
-              ))
+              game.lastPlay.cards.map((card, index) => {
+                const suitClass = card.isRed ? 'red-suit' : 'black-suit';
+                const suitSpecificClass = card.suit === '♥' ? 'suit-heart' : 
+                                         card.suit === '♦' ? 'suit-diamond' :
+                                         card.suit === '♠' ? 'suit-spade' : 'suit-club';
+                return (
+                  <div key={index} className="card front">
+                    <span className="card-rank">{card.rank}</span>
+                    <span className={`card-suit ${suitClass} ${suitSpecificClass}`}>{card.suit}</span>
+                    {card.isRed && <span className="red-indicator" />}
+                  </div>
+                );
+              })
             ) : (
               <p className="empty-played-cards">暂无出牌</p>
             )}

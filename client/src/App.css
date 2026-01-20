@@ -401,14 +401,40 @@ button {
   flex-shrink: 0;
 }
 
-/* 手牌区域也增大 */
-.hand, .penalty {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  min-height: 110px; /* 增大 */
-  gap: 8px; /* 增加间距 */
-  margin-bottom: 20px;
+/* 扑克牌花色颜色 */
+.card.front .suit-heart,
+.card.front .suit-diamond,
+.card.front .red-suit,
+.card.front .suit-red {
+  color: #e74c3c !important; /* 红色花色 */
+}
+
+.card.front .suit-spade,
+.card.front .suit-club,
+.card.front .black-suit,
+.card.front .suit-black {
+  color: #2c3e50 !important; /* 黑色花色 */
+}
+
+/* 扑克牌内部元素样式 */
+.card-rank {
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 2px;
+}
+
+.card-suit {
+  font-size: 22px;
+}
+
+/* 红色指示器样式 */
+.red-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  margin-left: 4px;
 }
 
 /* 翻牌对战组件样式 */
@@ -443,6 +469,16 @@ button {
 
 .red {
   color: #e74c3c;
+}
+
+/* 红色指示器样式 */
+.red-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  margin-left: 4px;
 }
 
 .actions {
@@ -664,24 +700,8 @@ button {
   background: rgba(205, 127, 50, 0.1);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .game-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .room-info {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .room-code, .player-info, .room-status {
-    width: 100%;
-    text-align: center;
-    margin: 5px 0;
-  }
-  
+/* 响应式设计 - 平板和小屏幕电脑 */
+@media (max-width: 1024px) {
   .game-content {
     flex-direction: column;
   }
@@ -690,13 +710,295 @@ button {
     min-width: 100%;
   }
   
+  .center-panel {
+    min-width: 100%;
+  }
+  
+  .three-pile-interface .game-area {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  .three-pile-interface .player-section,
+  .three-pile-interface .played-cards-area {
+    min-width: 100%;
+    width: 100%;
+  }
+  
+  #played-cards {
+    min-width: 300px;
+  }
+}
+
+/* 响应式设计 - 平板和大型手机 */
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .app-header p {
+    font-size: 0.9rem;
+  }
+  
+  .game-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+  }
+  
+  .room-info {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .room-code, .player-info, .room-status {
+    width: 100%;
+    text-align: center;
+    margin: 5px 0;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .game-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .leave-btn, .refresh-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+  
   .card {
-    width: 50px;
-    height: 75px;
-    font-size: 18px;
+    width: 45px;
+    height: 65px;
+    font-size: 16px;
   }
   
   .hand, .penalty {
+    min-height: 70px;
+    gap: 5px;
+  }
+  
+  .card-rank {
+    font-size: 16px;
+  }
+  
+  .card-suit {
+    font-size: 18px;
+  }
+  
+  .selection-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .create-room-section, .join-room-section {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .flip-card-interface, .three-pile-interface {
+    padding: 15px;
+    min-height: 350px;
+  }
+  
+  .game-area {
+    gap: 20px;
+  }
+  
+  .player-section {
+    min-width: 100%;
+  }
+  
+  .player-section h4 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  
+  .actions button {
+    min-width: 80px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+  }
+  
+  #played-cards {
+    min-width: 280px;
+    padding: 15px;
+    min-height: 100px;
+  }
+  
+  .pile {
+    width: 55px;
+    height: 80px;
+  }
+  
+  .pile-label {
+    font-size: 0.8rem;
+  }
+  
+  .pile-container {
+    margin: 5px;
+  }
+  
+  .pass-btn, .confirm-btn, .cancel-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    margin: 5px;
+  }
+}
+
+/* 响应式设计 - 手机小屏幕 */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 15px 10px;
+  }
+  
+  .app-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .app-header p {
+    font-size: 0.8rem;
+  }
+  
+  .main-content {
+    padding: 10px;
+  }
+  
+  .card {
+    width: 40px;
+    height: 55px;
+    font-size: 14px;
+  }
+  
+  .hand, .penalty {
+    min-height: 60px;
+    gap: 4px;
+  }
+  
+  .card-rank {
+    font-size: 14px;
+  }
+  
+  .card-suit {
+    font-size: 16px;
+  }
+  
+  .game-instructions,
+  .create-room-section,
+  .join-room-section {
+    padding: 15px;
+  }
+  
+  .flip-card-interface, .three-pile-interface {
+    padding: 10px;
+    min-height: 300px;
+  }
+  
+  .player-section h4 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  
+  .actions button {
+    min-width: 70px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    margin: 3px;
+  }
+  
+  #played-cards {
+    min-width: 250px;
+    padding: 10px;
     min-height: 80px;
+    gap: 5px;
+  }
+  
+  .pile {
+    width: 45px;
+    height: 65px;
+  }
+  
+  .piles {
+    gap: 10px;
+  }
+  
+  .pile-container {
+    margin: 3px;
+  }
+  
+  .pile-label {
+    font-size: 0.7rem;
+  }
+  
+  .remaining-count {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+  }
+  
+  .pass-btn, .confirm-btn, .cancel-btn {
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    margin: 3px;
+  }
+  
+  .rock-paper-scissors {
+    padding: 10px;
+  }
+  
+  .leaderboard-table {
+    font-size: 0.8rem;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 5px 3px;
+  }
+}
+
+/* 响应式设计 - 超小屏幕手机 */
+@media (max-width: 360px) {
+  .card {
+    width: 35px;
+    height: 50px;
+    font-size: 12px;
+  }
+  
+  .hand, .penalty {
+    min-height: 55px;
+  }
+  
+  .card-rank {
+    font-size: 12px;
+  }
+  
+  .card-suit {
+    font-size: 14px;
+  }
+  
+  #played-cards {
+    min-width: 220px;
+    min-height: 70px;
+  }
+  
+  .pile {
+    width: 40px;
+    height: 55px;
+  }
+  
+  .actions button {
+    min-width: 60px;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+  
+  .room-code, .player-info, .room-status {
+    font-size: 0.8rem;
+    padding: 5px 10px;
   }
 }

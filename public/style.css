@@ -715,12 +715,233 @@ footer {
     transform: translateY(1px);
 }
 
+/* 三堆出牌游戏样式 - 折叠展示 & 横向排列 */
+/* 玩家手牌区域横向排列 */
+.hand.three-pile-layout {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 10px;
+    width: 100%;
+    min-height: 150px;
+}
+
+.pile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    width: 80px;
+}
+
+.pile-label {
+    font-size: 0.9rem;
+    color: #81c784;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.pile {
+    position: relative;
+    width: 70px;
+    height: 100px;
+    margin: 0 auto;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.pile .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    transition: transform 0.3s, z-index 0.3s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 折叠效果：每张牌比上一张牌向下偏移15px */
+.pile .card:nth-child(1) { z-index: 10; }
+.pile .card:nth-child(2) { 
+    z-index: 9; 
+    top: 15px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(3) { 
+    z-index: 8; 
+    top: 30px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(4) { 
+    z-index: 7; 
+    top: 45px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(5) { 
+    z-index: 6; 
+    top: 60px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(6) { 
+    z-index: 5; 
+    top: 75px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(7) { 
+    z-index: 4; 
+    top: 90px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(8) { 
+    z-index: 3; 
+    top: 105px;
+    transform: translateY(0);
+}
+.pile .card:nth-child(9) { 
+    z-index: 2; 
+    top: 120px;
+    transform: translateY(0);
+}
+
+/* 鼠标悬停时提升最上面的牌 */
+.pile .card.front:hover {
+    transform: translateY(-10px);
+    z-index: 100;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 大小王文字居中 */
+.card.front {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* 针对大小王的特殊样式 */
+.card.front[data-rank*="王"] {
+    font-size: 16px;
+    line-height: 1.2;
+    word-wrap: break-word;
+    padding: 5px;
+}
+
+/* 不出牌按钮样式 */
+.pass-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    margin: 10px auto;
+    display: block;
+    width: 80%;
+    max-width: 200px;
+}
+
+.pass-btn:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
+/* 三堆出牌出牌区样式 */
+.three-pile-table {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.played-cards-area {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.played-cards-area .label {
+    font-size: 1.2rem;
+    color: #ffcc80;
+    margin-bottom: 10px;
+}
+
+.played-cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 100px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+}
+
+.played-cards .card {
+    width: 60px;
+    height: 85px;
+    margin: 0;
+}
+
+.empty-played-cards {
+    color: #b0bec5;
+    font-style: italic;
+    margin: 0;
+    align-self: center;
+    width: 100%;
+}
+
+/* 游戏界面区域切换 */
+.game-interface-section {
+    display: block;
+}
+
+.game-interface-section.hidden {
+    display: none;
+}
+
+/* 游戏类型选择器样式 */
+.game-type-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.game-type-select:focus {
+    outline: none;
+    border-color: #4fc3f7;
+}
+
+.game-type-select option {
+    background: #2c3e50;
+    color: white;
+}
+
 /* 触摸设备优化 */
 @media (hover: none) and (pointer: coarse) {
     .actions button,
     .room-btn,
     .leave-btn,
-    .start-btn {
+    .start-btn,
+    .pass-btn {
         min-height: 44px; /* iOS推荐最小触摸目标尺寸 */
     }
     
@@ -728,7 +949,8 @@ footer {
         min-height: 60px;
     }
     
-    .form-group input {
+    .form-group input,
+    .game-type-select {
         min-height: 44px;
     }
 }

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三堆出牌游戏 - 界面测试</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .test-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>三堆出牌游戏 - 界面测试</h1>
+        
+        <div class="test-section">
+            <h2>1. 游戏类型选择器</h2>
+            <div class="form-group">
+                <label for="test-game-type">游戏类型：</label>
+                <select id="test-game-type" class="game-type-select">
+                    <option value="flip_card">翻牌对战</option>
+                    <option value="three_pile" selected>三堆出牌</option>
+                </select>
+            </div>
+            <p>游戏类型选择器正常显示，支持两种游戏模式：翻牌对战和三堆出牌。</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 牌堆布局测试</h2>
+            <div class="table">
+                <div class="player bottom">
+                    <div class="label">玩家牌堆</div>
+                    <div id="test-piles" class="hand"></div>
+                </div>
+            </div>
+            
+            <div class="test-buttons">
+                <button class="test-btn" onclick="showPiles()">显示三堆牌</button>
+                <button class="test-btn" onclick="showCards()">显示单张牌</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. 操作按钮测试</h2>
+            <div class="actions" id="test-actions">
+                <!-- 通过JavaScript动态生成 -->
+            </div>
+            <p>三堆出牌游戏包含两种操作：出牌（点击翻开的牌）和不出牌（点击"不出牌"按钮）。</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. 项目结构</h2>
+            <ul>
+                <li><strong>游戏框架：</strong>创建了AbstractGame抽象基类，支持扩展多种扑克牌游戏</li>
+                <li><strong>现有游戏：</strong>翻牌对战（FlipCardGame）和三堆出牌（ThreePileGame）</li>
+                <li><strong>服务器：</strong>支持多游戏类型，根据房主选择的游戏类型创建相应实例</li>
+                <li><strong>客户端：</strong>根据游戏类型动态渲染不同界面和操作逻辑</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 测试数据
+        const testPiles = [
+            [
+                { rank: 'A', suit: '♠', faceUp: true, value: 1, isRed: false },
+                { rank: '5', suit: '♥', faceUp: false, value: 5, isRed: true },
+                { rank: 'K', suit: '♣', faceUp: false, value: 13, isRed: false }
+            ],
+            [
+                { rank: '10', suit: '♦', faceUp: true, value: 10, isRed: true },
+                { rank: '2', suit: '♠', faceUp: false, value: 2, isRed: false }
+            ],
+            [
+                { rank: 'J', suit: '♥', faceUp: true, value: 11, isRed: true },
+                { rank: '7', suit: '♣', faceUp: false, value: 7, isRed: false },
+                { rank: 'Q', suit: '♦', faceUp: false, value: 12, isRed: true }
+            ]
+        ];
+        
+        function showPiles() {
+            const container = document.getElementById('test-piles');
+            container.innerHTML = '';
+            
+            testPiles.forEach((pile, pileIndex) => {
+                const pileContainer = document.createElement('div');
+                pileContainer.className = 'pile-container';
+                pileContainer.innerHTML = `<div class="pile-label">牌堆 ${pileIndex + 1}</div>`;
+                
+                const pileDiv = document.createElement('div');
+                pileDiv.className = 'pile';
+                
+                pile.forEach((card, cardIndex) => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card ' + (card.faceUp ? 'front' : 'back');
+                    cardDiv.dataset.pileIndex = pileIndex;
+                    cardDiv.dataset.cardIndex = cardIndex;
+                    
+                    if (card.faceUp) {
+                        cardDiv.innerText = card.rank + card.suit;
+                        if (card.isRed) cardDiv.classList.add('red');
+                        cardDiv.style.cursor = 'pointer';
+                    }
+                    
+                    pileDiv.appendChild(cardDiv);
+                });
+                
+                pileContainer.appendChild(pileDiv);
+                container.appendChild(pileContainer);
+            });
+        }
+        
+        function showCards() {
+            const container = document.getElementById('test-piles');
+            container.innerHTML = '';
+            
+            // 显示单张牌测试
+            const singleCard = testPiles[0][0];
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card front';
+            cardDiv.innerText = singleCard.rank + singleCard.suit;
+            if (singleCard.isRed) cardDiv.classList.add('red');
+            
+            container.appendChild(cardDiv);
+        }
+        
+        function showActions() {
+            const actions = document.getElementById('test-actions');
+            actions.innerHTML = '';
+            
+            // 添加不出牌按钮
+            const passBtn = document.createElement('button');
+            passBtn.innerText = '不出牌';
+            passBtn.className = 'pass-btn';
+            passBtn.style.margin = '10px auto';
+            passBtn.style.display = 'block';
+            passBtn.onclick = () => alert('不出牌操作');
+            actions.appendChild(passBtn);
+        }
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            showPiles();
+            showActions();
+        });
+    </script>
+</body>
+</html>

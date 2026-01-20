@@ -395,6 +395,39 @@ function renderFlipCard() {
 
 // 渲染三堆出牌游戏
 function renderThreePile() {
+    // 检查游戏是否结束
+    if (game.winner !== null) {
+        roundDisplay.textContent = `${game.gameName} - 游戏结束`;
+        // 清空现有显示区域
+        selfPiles.innerHTML = '';
+        opponentPiles.innerHTML = '';
+        playedCardsArea.innerHTML = '';
+        
+        // 显示获胜信息
+        const winnerMessage = document.createElement('div');
+        winnerMessage.className = 'winner-message';
+        winnerMessage.style.textAlign = 'center';
+        winnerMessage.style.fontSize = '1.5rem';
+        winnerMessage.style.fontWeight = 'bold';
+        winnerMessage.style.color = '#ffcc00';
+        winnerMessage.style.margin = '20px 0';
+        winnerMessage.style.padding = '15px';
+        winnerMessage.style.background = 'rgba(0,0,0,0.7)';
+        winnerMessage.style.borderRadius = '10px';
+        if (game.winner === pid) {
+            winnerMessage.textContent = '🎉 恭喜你获胜！';
+        } else {
+            winnerMessage.textContent = '💀 对手获胜！';
+        }
+        playedCardsArea.appendChild(winnerMessage);
+        
+        // 清空操作区域，并显示重新开始按钮
+        actions.innerHTML = '';
+        showRestartButton();
+        
+        return;
+    }
+    
     roundDisplay.textContent = `${game.gameName} - ${game.currentPlayer === pid ? '你的回合' : '对手回合'}`;
     
     // 清空现有显示区域
@@ -402,18 +435,25 @@ function renderThreePile() {
     opponentPiles.innerHTML = '';
     playedCardsArea.innerHTML = '';
     
-    // 显示玩家自己的三堆牌（折叠布局）
+    // 显示玩家自己的三堆牌
     if (game.piles && game.piles[pid]) {
         const myPiles = game.piles[pid];
         myPiles.forEach((pile, pileIndex) => {
+            // 如果牌堆为空，隐藏整个容器
+            if (pile.length === 0) {
+                return;
+            }
+            
             const pileContainer = document.createElement('div');
             pileContainer.className = 'pile-container';
             pileContainer.innerHTML = `<div class="pile-label">牌堆 ${pileIndex + 1}</div>`;
             
             const pileDiv = document.createElement('div');
-            pileDiv.className = 'pile';
             
-            pile.forEach((card, cardIndex) => {
+            // 如果只有一张牌，只显示那张牌
+            if (pile.length === 1) {
+                pileDiv.className = 'pile single-card';
+                const card = pile[0];
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card ' + (card.faceUp ? 'front' : 'back');
                 if (card.faceUp) {
@@ -421,39 +461,104 @@ function renderThreePile() {
                     if (card.isRed) cardDiv.classList.add('red');
                 }
                 cardDiv.dataset.pileIndex = pileIndex;
-                cardDiv.dataset.cardIndex = cardIndex;
+                cardDiv.dataset.cardIndex = 0;
                 pileDiv.appendChild(cardDiv);
-            });
+            } else {
+                // 多张牌：显示第一张牌，其他牌堆叠在下面
+                pileDiv.className = 'pile';
+                
+                // 显示第一张牌
+                const firstCard = pile[0];
+                const firstCardDiv = document.createElement('div');
+                firstCardDiv.className = 'card ' + (firstCard.faceUp ? 'front' : 'back');
+                if (firstCard.faceUp) {
+                    firstCardDiv.innerText = firstCard.rank + (firstCard.suit || '');
+                    if (firstCard.isRed) firstCardDiv.classList.add('red');
+                }
+                firstCardDiv.dataset.pileIndex = pileIndex;
+                firstCardDiv.dataset.cardIndex = 0;
+                pileDiv.appendChild(firstCardDiv);
+                
+                // 创建剩余牌数量显示
+                const remainingCount = document.createElement('div');
+                remainingCount.className = 'remaining-count';
+                remainingCount.textContent = pile.length - 1; // 减去第一张牌
+                pileDiv.appendChild(remainingCount);
+                
+                // 为其他牌创建背面堆叠（仅用于视觉层次，不显示具体信息）
+                for (let i = 1; i < pile.length; i++) {
+                    const cardBackDiv = document.createElement('div');
+                    cardBackDiv.className = 'card back';
+                    cardBackDiv.dataset.pileIndex = pileIndex;
+                    cardBackDiv.dataset.cardIndex = i;
+                    pileDiv.appendChild(cardBackDiv);
+                }
+            }
             
             pileContainer.appendChild(pileDiv);
             selfPiles.appendChild(pileContainer);
         });
     }
     
-    // 显示对手的三堆牌（折叠布局，只显示最上面的翻开的牌）
+    // 显示对手的三堆牌（只显示第一张翻开的牌，其余用背面堆叠）
     if (game.piles && game.piles[1 - pid]) {
         const oppPiles = game.piles[1 - pid];
         oppPiles.forEach((pile, pileIndex) => {
+            // 如果牌堆为空，隐藏整个容器
+            if (pile.length === 0) {
+                return;
+            }
+            
             const pileContainer = document.createElement('div');
             pileContainer.className = 'pile-container';
             pileContainer.innerHTML = `<div class="pile-label">对手牌堆 ${pileIndex + 1}</div>`;
             
             const pileDiv = document.createElement('div');
-            pileDiv.className = 'pile';
             
-            // 对手的牌：只显示第一张翻开的牌，其余显示背面
-            pile.forEach((card, cardIndex) => {
+            // 如果只有一张牌，只显示那张牌（如果翻开）
+            if (pile.length === 1) {
+                pileDiv.className = 'pile single-card';
+                const card = pile[0];
                 const cardDiv = document.createElement('div');
-                // 如果是对手且不是第一张牌，或者牌没翻开，显示背面
-                if (cardIndex > 0 || !card.faceUp) {
-                    cardDiv.className = 'card back';
-                } else {
+                // 对手的牌：只有翻开的才显示正面
+                if (card.faceUp) {
                     cardDiv.className = 'card front';
                     cardDiv.innerText = card.rank + (card.suit || '');
                     if (card.isRed) cardDiv.classList.add('red');
+                } else {
+                    cardDiv.className = 'card back';
                 }
                 pileDiv.appendChild(cardDiv);
-            });
+            } else {
+                // 多张牌：显示第一张牌（如果翻开），其他牌堆叠在下面
+                pileDiv.className = 'pile';
+                
+                // 显示第一张牌
+                const firstCard = pile[0];
+                const firstCardDiv = document.createElement('div');
+                // 对手的牌：只有翻开的才显示正面
+                if (firstCard.faceUp) {
+                    firstCardDiv.className = 'card front';
+                    firstCardDiv.innerText = firstCard.rank + (firstCard.suit || '');
+                    if (firstCard.isRed) firstCardDiv.classList.add('red');
+                } else {
+                    firstCardDiv.className = 'card back';
+                }
+                pileDiv.appendChild(firstCardDiv);
+                
+                // 创建剩余牌数量显示
+                const remainingCount = document.createElement('div');
+                remainingCount.className = 'remaining-count';
+                remainingCount.textContent = pile.length - 1; // 减去第一张牌
+                pileDiv.appendChild(remainingCount);
+                
+                // 为其他牌创建背面堆叠（仅用于视觉层次，不显示具体信息）
+                for (let i = 1; i < pile.length; i++) {
+                    const cardBackDiv = document.createElement('div');
+                    cardBackDiv.className = 'card back';
+                    pileDiv.appendChild(cardBackDiv);
+                }
+            }
             
             pileContainer.appendChild(pileDiv);
             opponentPiles.appendChild(pileContainer);
@@ -461,12 +566,15 @@ function renderThreePile() {
     }
     
     // 渲染出牌区
-    if (game.lastCard) {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'card front';
-        cardDiv.innerText = game.lastCard.rank + (game.lastCard.suit || '');
-        if (game.lastCard.isRed) cardDiv.classList.add('red');
-        playedCardsArea.appendChild(cardDiv);
+    if (game.lastPlay && game.lastPlay.type !== 'pass') {
+        const playedCards = game.lastPlay.cards;
+        playedCards.forEach(card => {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card front';
+            cardDiv.innerText = card.rank + (card.suit || '');
+            if (card.isRed) cardDiv.classList.add('red');
+            playedCardsArea.appendChild(cardDiv);
+        });
     } else {
         const emptyMsg = document.createElement('p');
         emptyMsg.className = 'empty-played-cards';
@@ -524,6 +632,14 @@ function renderFlipCardActions() {
 function renderThreePileActions() {
     actions.innerHTML = '';
     
+    // 检查游戏阶段
+    if (game.stage === 'rock_paper_scissors') {
+        // 石头剪刀布阶段
+        renderRockPaperScissorsActions();
+        return;
+    }
+    
+    // 正常游戏阶段
     // 如果不是当前玩家的回合，不显示操作按钮
     if (game.currentPlayer !== pid) {
         actions.innerHTML = '<p>等待对手出牌...</p>';
@@ -542,42 +658,219 @@ function renderThreePileActions() {
     };
     actions.appendChild(passBtn);
     
-    // 为玩家自己的牌添加点击事件
-    const myCards = selfPiles.querySelectorAll('.card');
+    // 添加确定出牌按钮（初始隐藏）
+    const confirmBtn = document.createElement('button');
+    confirmBtn.innerText = '确定出牌';
+    confirmBtn.className = 'confirm-btn';
+    confirmBtn.style.display = 'none';
+    confirmBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+    confirmBtn.style.color = 'white';
+    confirmBtn.style.border = 'none';
+    confirmBtn.style.padding = '12px 25px';
+    confirmBtn.style.borderRadius = '8px';
+    confirmBtn.style.cursor = 'pointer';
+    confirmBtn.style.fontWeight = 'bold';
+    confirmBtn.style.margin = '10px auto';
+    confirmBtn.style.display = 'block';
+    confirmBtn.style.width = '80%';
+    confirmBtn.style.maxWidth = '200px';
+    confirmBtn.onclick = confirmPlay;
+    actions.appendChild(confirmBtn);
+    
+    // 添加取消选择按钮
+    const cancelBtn = document.createElement('button');
+    cancelBtn.innerText = '取消选择';
+    cancelBtn.className = 'cancel-btn';
+    cancelBtn.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+    cancelBtn.style.color = 'white';
+    cancelBtn.style.border = 'none';
+    cancelBtn.style.padding = '8px 15px';
+    cancelBtn.style.borderRadius = '8px';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.style.fontWeight = 'bold';
+    cancelBtn.style.margin = '10px auto';
+    cancelBtn.style.display = 'none';
+    cancelBtn.style.width = '80%';
+    cancelBtn.style.maxWidth = '200px';
+    cancelBtn.onclick = cancelSelection;
+    actions.appendChild(cancelBtn);
+    
+    // 选择状态
+    let selectedCards = [];
+    
+    // 为玩家自己的牌添加点击事件（选牌）
+    const myCards = selfPiles.querySelectorAll('.card.front');
     myCards.forEach(card => {
         card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-            const pileIndex = parseInt(card.dataset.pileIndex);
-            const cardIndex = parseInt(card.dataset.cardIndex);
+        
+        // 移除之前的事件监听器
+        const newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+        
+        newCard.addEventListener('click', () => {
+            const pileIndex = parseInt(newCard.dataset.pileIndex);
+            const cardIndex = parseInt(newCard.dataset.cardIndex);
             
-            // 检查是否可以出这张牌（必须是翻开的牌）
+            // 检查是否是翻开的牌
             const cardData = game.piles[pid][pileIndex][cardIndex];
             if (!cardData.faceUp) {
-                alert('只能出翻开的牌！');
+                alert('只能选择翻开的牌！');
                 return;
             }
             
-            // 如果有上一张牌且不是跳过状态，检查牌是否比上一张大
-            if (game.lastCard && !game.skipped) {
-                // 计算牌的大小（需要服务器端验证，这里先简单提示）
-                const cardValue = cardData.value;
-                const lastCardValue = game.lastCard.value;
-                if (cardValue <= lastCardValue) {
-                    alert(`只能出比上一张牌(${game.lastCard.rank}${game.lastCard.suit})大的牌！`);
-                    return;
-                }
+            // 添加或移除选择
+            const existingIndex = selectedCards.findIndex(c => 
+                c.pileIndex === pileIndex && c.cardIndex === cardIndex
+            );
+            
+            if (existingIndex >= 0) {
+                // 取消选择
+                selectedCards.splice(existingIndex, 1);
+                newCard.style.boxShadow = '';
+            } else {
+                // 添加选择
+                selectedCards.push({ pileIndex, cardIndex });
+                newCard.style.boxShadow = '0 0 15px #ffcc00';
             }
             
+            // 更新按钮显示
+            updateActionButtons();
+        });
+    });
+    
+    function updateActionButtons() {
+        if (selectedCards.length > 0) {
+            confirmBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
+            passBtn.style.display = 'none';
+        } else {
+            confirmBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            passBtn.style.display = 'block';
+        }
+    }
+    
+    function confirmPlay() {
+        if (selectedCards.length === 0) {
+            alert('请先选择要出的牌！');
+            return;
+        }
+        
+        // 发送出牌请求
+        ws.send(JSON.stringify({
+            type: 'game_action',
+            action: {
+                type: 'play',
+                cards: selectedCards
+            }
+        }));
+        
+        // 清除选择和荧光效果
+        const currentCards = selfPiles.querySelectorAll('.card.front');
+        currentCards.forEach(card => {
+            card.style.boxShadow = '';
+        });
+        selectedCards = [];
+        updateActionButtons();
+    }
+    
+    function cancelSelection() {
+        // 重新获取当前所有的牌
+        const currentCards = selfPiles.querySelectorAll('.card.front');
+        currentCards.forEach(card => {
+            card.style.boxShadow = '';
+        });
+        selectedCards = [];
+        updateActionButtons();
+    }
+}
+
+// 渲染石头剪刀布操作按钮
+function renderRockPaperScissorsActions() {
+    // 清空操作区域
+    actions.innerHTML = '';
+    
+    // 检查是否轮到当前玩家
+    const myChoice = game.rockPaperScissors[`player${pid}`];
+    
+    if (myChoice !== null) {
+        // 已做出选择，等待对手
+        actions.innerHTML = `<p>已选择: ${getChoiceText(myChoice)}，等待对手选择...</p>`;
+        return;
+    }
+    
+    // 检查是否轮到当前玩家选择
+    if (game.currentPlayer !== pid) {
+        actions.innerHTML = `<p>等待对手选择石头剪刀布...</p>`;
+        return;
+    }
+    
+    // 显示选择提示
+    const prompt = document.createElement('p');
+    prompt.textContent = '请选择石头、剪刀或布：';
+    prompt.style.textAlign = 'center';
+    prompt.style.marginBottom = '15px';
+    prompt.style.color = '#ffcc80';
+    actions.appendChild(prompt);
+    
+    // 创建石头剪刀布按钮
+    const choices = [
+        { value: 'rock', text: '✊ 石头', color: '#3498db' },
+        { value: 'paper', text: '✋ 布', color: '#2ecc71' },
+        { value: 'scissors', text: '✌️ 剪刀', color: '#e74c3c' }
+    ];
+    
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.innerText = choice.text;
+        btn.style.background = `linear-gradient(135deg, ${choice.color}, ${darkenColor(choice.color)})`;
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+        btn.style.padding = '15px 20px';
+        btn.style.borderRadius = '10px';
+        btn.style.cursor = 'pointer';
+        btn.style.fontWeight = 'bold';
+        btn.style.margin = '10px';
+        btn.style.flex = '1';
+        btn.style.minWidth = '120px';
+        btn.style.fontSize = '1.1rem';
+        btn.onclick = () => {
             ws.send(JSON.stringify({
                 type: 'game_action',
                 action: {
-                    type: 'play',
-                    pileIndex: pileIndex,
-                    cardIndex: cardIndex
+                    type: 'rock_paper_scissors',
+                    choice: choice.value
                 }
             }));
-        });
+        };
+        actions.appendChild(btn);
     });
+    
+    // 设置按钮容器样式
+    actions.style.display = 'flex';
+    actions.style.justifyContent = 'center';
+    actions.style.flexWrap = 'wrap';
+}
+
+// 获取选择文本
+function getChoiceText(choice) {
+    const texts = {
+        'rock': '✊ 石头',
+        'paper': '✋ 布', 
+        'scissors': '✌️ 剪刀'
+    };
+    return texts[choice] || choice;
+}
+
+// 加深颜色
+function darkenColor(color) {
+    // 简单的颜色加深
+    const colorMap = {
+        '#3498db': '#2980b9',
+        '#2ecc71': '#27ae60',
+        '#e74c3c': '#c0392b'
+    };
+    return colorMap[color] || color.replace(/^#/, '#0');
 }
 
 // 绘制牌
@@ -598,8 +891,6 @@ function draw(dom, cards, showAll = false) {
 // 游戏结束动画
 function endAnim(leaderboard, winners) {
     setTimeout(() => {
-        const myPenalty = game.penalty[pid].length;
-        const oppPenalty = game.penalty[1 - pid].length;
         let resultMessage;
         
         if (winners && winners.length === 1) {
@@ -611,12 +902,19 @@ function endAnim(leaderboard, winners) {
         } else if (winners && winners.length === 2) {
             resultMessage = '🤝 平局';
         } else {
-            // 备用逻辑
-            if (myPenalty < oppPenalty) {
-                resultMessage = '🎉 胜利';
-            } else if (myPenalty > oppPenalty) {
-                resultMessage = '💀 失败';
+            // 备用逻辑，仅适用于翻牌对战
+            if (game && game.penalty) {
+                const myPenalty = game.penalty[pid].length;
+                const oppPenalty = game.penalty[1 - pid].length;
+                if (myPenalty < oppPenalty) {
+                    resultMessage = '🎉 胜利';
+                } else if (myPenalty > oppPenalty) {
+                    resultMessage = '💀 失败';
+                } else {
+                    resultMessage = '🤝 平局';
+                }
             } else {
+                // 如果没有penalty属性，默认平局
                 resultMessage = '🤝 平局';
             }
         }
@@ -688,8 +986,10 @@ function updateGameRules() {
     if (game && game.gameName === '三堆出牌') {
         gameRulesList.innerHTML = `
             <li>每人三堆牌，每堆第一张自动翻开</li>
-            <li>按牌面大小出牌，必须比上一张牌大</li>
+            <li>出牌类型：单张、对子(2张相同)、三连(3张相同)、顺子(3-5张连续，不含大小王)</li>
+            <li>下家必须出相同类型且比上家更大的牌</li>
             <li>可以选择不出牌（跳过）</li>
+            <li>连续两人不出牌则清除出牌记录，重新开始</li>
             <li>先出完所有牌的玩家获胜</li>
             <li>大小王可出，大王最大，小王次之</li>
             <li>支持石头剪刀布决定先手</li>

@@ -715,14 +715,14 @@ footer {
     transform: translateY(1px);
 }
 
-/* 三堆出牌游戏样式 - 折叠展示 & 横向排列 */
+/* 三堆出牌游戏样式 - 堆叠展示 & 横向排列 */
 /* 玩家手牌区域横向排列 */
 .hand.three-pile-layout {
     display: flex;
     justify-content: space-around;
     align-items: flex-start;
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 15px;
     width: 100%;
     min-height: 150px;
 }
@@ -733,6 +733,7 @@ footer {
     align-items: center;
     margin: 0;
     width: 80px;
+    position: relative;
 }
 
 .pile-label {
@@ -752,6 +753,13 @@ footer {
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pile.empty {
+    display: none; /* 空牌堆隐藏 */
 }
 
 .pile .card {
@@ -765,47 +773,14 @@ footer {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* 折叠效果：每张牌比上一张牌向下偏移15px */
-.pile .card:nth-child(1) { z-index: 10; }
-.pile .card:nth-child(2) { 
+/* 堆叠效果：所有牌重叠在一起，只有第一张牌可见 */
+.pile .card:nth-child(1) { 
+    z-index: 10; 
+}
+.pile .card:nth-child(n+2) { 
     z-index: 9; 
-    top: 15px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(3) { 
-    z-index: 8; 
-    top: 30px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(4) { 
-    z-index: 7; 
-    top: 45px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(5) { 
-    z-index: 6; 
-    top: 60px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(6) { 
-    z-index: 5; 
-    top: 75px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(7) { 
-    z-index: 4; 
-    top: 90px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(8) { 
-    z-index: 3; 
-    top: 105px;
-    transform: translateY(0);
-}
-.pile .card:nth-child(9) { 
-    z-index: 2; 
-    top: 120px;
-    transform: translateY(0);
+    top: 0;
+    left: 0;
 }
 
 /* 鼠标悬停时提升最上面的牌 */
@@ -813,6 +788,36 @@ footer {
     transform: translateY(-10px);
     z-index: 100;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 剩余牌数量显示 */
+.remaining-count {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* 当只有一张牌时，不显示剩余牌数量 */
+.pile.single-card .remaining-count {
+    display: none;
+}
+
+/* 牌堆为空时隐藏整个容器 */
+.pile-container.empty {
+    display: none;
 }
 
 /* 大小王文字居中 */

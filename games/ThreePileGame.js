@@ -40,43 +40,21 @@ class ThreePileGame extends AbstractGame {
             });
         });
         
-        // 石头剪刀布决定先手玩家
-        const choices = ['rock', 'paper', 'scissors'];
-        const player0Choice = choices[Math.floor(Math.random() * 3)];
-        const player1Choice = choices[Math.floor(Math.random() * 3)];
-        let firstPlayer = 0; // 默认玩家0先手
-        
-        // 比较石头剪刀布结果
-        if (player0Choice === player1Choice) {
-            // 平局，随机决定
-            firstPlayer = Math.floor(Math.random() * 2);
-        } else if (
-            (player0Choice === 'rock' && player1Choice === 'scissors') ||
-            (player0Choice === 'paper' && player1Choice === 'rock') ||
-            (player0Choice === 'scissors' && player1Choice === 'paper')
-        ) {
-            // 玩家0胜利
-            firstPlayer = 0;
-        } else {
-            // 玩家1胜利
-            firstPlayer = 1;
-        }
-        
-        this.currentPlayer = firstPlayer;
-        
+        // 初始化游戏状态，等待石头剪刀布选择
         this.gameState = {
             piles: playerPiles,
-            currentPlayer: this.currentPlayer,
+            currentPlayer: 0, // 默认玩家0开始选择石头剪刀布
             lastCard: null,
             skipped: false,
             passes: 0,
             winner: null,
-            gameStarted: true,
+            gameStarted: false, // 游戏未开始，等待石头剪刀布
             rockPaperScissors: {
-                player0: player0Choice,
-                player1: player1Choice,
-                winner: firstPlayer
-            }
+                player0: null, // 等待玩家选择
+                player1: null, // 等待玩家选择
+                winner: null   // 结果未定
+            },
+            stage: 'rock_paper_scissors' // 游戏阶段：石头剪刀布阶段
         };
         
         this.updateActivity();
@@ -108,6 +86,86 @@ class ThreePileGame extends AbstractGame {
         return 0;
     }
 
+    // 判断出牌类型并验证
+    validateAndGetPlayType(cards) {
+        if (!cards || cards.length === 0) {
+            throw new Error('请选择要出的牌');
+        }
+
+        const count = cards.length;
+        
+        // 单张牌
+        if (count === 1) {
+            return 'single';
+        }
+        
+        // 对子
+        if (count === 2) {
+            if (cards[0].value === cards[1].value) {
+                return 'pair';
+            } else {
+                throw new Error('对子必须由两张相同点数的牌组成');
+            }
+        }
+        
+        // 三连 & 顺子（至少3张，最多5张，连续数字，大小王不能参与）
+        if (count === 3) {
+            if (cards[0].value === cards[1].value && cards[1].value === cards[2].value) {
+                return 'triple';
+            } else {
+                // 检查是否包含大小王
+                if (cards.some(card => card.suit === 'Joker')) {
+                    throw new Error('顺子不能包含大小王');
+                }
+
+                // 复制并排序
+                const sortedCards = [...cards].sort((a, b) => a.value - b.value);
+
+                // 检查是否连续
+                for (let i = 1; i < sortedCards.length; i++) {
+                    if (sortedCards[i].value !== sortedCards[i-1].value + 1) {
+                        throw new Error('顺子必须由连续点数的牌组成');
+                    }
+                }
+                return 'straight';
+            }
+        }
+
+        throw new Error(`不支持出${count}张牌`);
+    }
+
+    // 比较两次出牌的大小
+    comparePlays(prevPlay, currentPlay) {
+        // 如果上一轮没有出牌或者上一轮是pass，则可以直接出
+        if (!prevPlay || prevPlay.type === 'pass') {
+            return true;
+        }
+        
+        // 类型必须相同
+        if (prevPlay.type !== currentPlay.type) {
+            throw new Error(`必须出相同类型的牌：${prevPlay.type}`);
+        }
+        
+        // 张数必须相同（对于顺子，张数必须相同）
+        if (prevPlay.cards.length !== currentPlay.cards.length) {
+            throw new Error(`必须出相同张数的牌：${prevPlay.cards.length}张`);
+        }
+        
+        // 比较最大牌
+        const getMaxCard = (cards) => {
+            return cards.reduce((max, card) => card.value > max.value ? card : max, cards[0]);
+        };
+        
+        const prevMax = getMaxCard(prevPlay.cards);
+        const currentMax = getMaxCard(currentPlay.cards);
+        
+        if (currentMax.value <= prevMax.value) {
+            throw new Error(`必须出比上一轮更大的牌`);
+        }
+        
+        return true;
+    }
+
     handleAction(playerIndex, action) {
         if (this.isFinished()) {
             throw new Error('游戏已结束');
@@ -120,63 +178,111 @@ class ThreePileGame extends AbstractGame {
             throw new Error('还没轮到你的回合');
         }
 
-        switch (action.type) {
-            case 'play':
-                return this.handlePlayAction(playerIndex, action);
-            case 'pass':
-                return this.handlePassAction(playerIndex);
-            default:
-                throw new Error('未知操作类型');
+        // 根据游戏阶段处理不同操作
+        if (game.stage === 'rock_paper_scissors') {
+            // 石头剪刀布阶段
+            switch (action.type) {
+                case 'rock_paper_scissors':
+                    return this.handleRockPaperScissorsAction(playerIndex, action);
+                default:
+                    throw new Error('石头剪刀布阶段只能选择石头、剪刀、布');
+            }
+        } else {
+            // 正常游戏阶段
+            switch (action.type) {
+                case 'play':
+                    return this.handlePlayAction(playerIndex, action);
+                case 'pass':
+                    return this.handlePassAction(playerIndex);
+                default:
+                    throw new Error('未知操作类型');
+            }
         }
     }
 
     handlePlayAction(playerIndex, action) {
         const game = this.gameState;
-        const { pileIndex, cardIndex } = action;
+        const { cards } = action; // cards: [{pileIndex, cardIndex}, ...]
         
-        // 验证操作合法性
-        if (pileIndex < 0 || pileIndex > 2) {
-            throw new Error('无效的牌堆索引');
+        if (!cards || !Array.isArray(cards) || cards.length === 0) {
+            throw new Error('请选择要出的牌');
         }
         
-        const pile = game.piles[playerIndex][pileIndex];
-        if (cardIndex >= pile.length) {
-            throw new Error('无效的卡牌索引');
+        // 检查每张牌是否都在牌堆中且是翻开的
+        const selectedCards = [];
+        for (const cardInfo of cards) {
+            const pileIndex = cardInfo.pileIndex;
+            const cardIndex = cardInfo.cardIndex;
+            
+            // 检查牌堆索引
+            if (pileIndex < 0 || pileIndex > 2) {
+                throw new Error('无效的牌堆索引');
+            }
+            
+            const pile = game.piles[playerIndex][pileIndex];
+            if (cardIndex >= pile.length) {
+                throw new Error('无效的卡牌索引');
+            }
+            const card = pile[cardIndex];
+            if (!card.faceUp) {
+                throw new Error('只能出翻开的牌');
+            }
+            selectedCards.push(card);
         }
         
-        const card = pile[cardIndex];
+        // 判断出牌类型
+        const playType = this.validateAndGetPlayType(selectedCards);
         
-        // 检查是否翻开（只有牌堆最上面的牌可以出）
-        if (!card.faceUp) {
-            throw new Error('只能出翻开的牌');
+        // 与上一轮出牌比较
+        if (game.lastPlay && !game.skipped) {
+            this.comparePlays(game.lastPlay, {
+                type: playType,
+                cards: selectedCards
+            });
         }
         
-        // 检查牌是否比上一张大（如果有上一张牌且不是pass后的情况）
-        if (game.lastCard && !game.skipped) {
-            if (this.compareCards(card, game.lastCard) <= 0) {
-                throw new Error('只能出比上一张大的牌');
+        // 出牌：从牌堆中移除（按牌堆分组，从后往前移除）
+        // 先按牌堆分组
+        const cardsByPile = {};
+        cards.forEach(cardInfo => {
+            const pileIndex = cardInfo.pileIndex;
+            if (!cardsByPile[pileIndex]) {
+                cardsByPile[pileIndex] = [];
+            }
+            cardsByPile[pileIndex].push(cardInfo.cardIndex);
+        });
+        
+        // 对每个牌堆进行移除
+        for (const pileIndex in cardsByPile) {
+            const pile = game.piles[playerIndex][pileIndex];
+            const indices = cardsByPile[pileIndex].sort((a, b) => b - a); // 从大到小排序
+            indices.forEach(index => {
+                pile.splice(index, 1);
+            });
+            
+            // 如果牌堆还有牌，将新的第一张翻开
+            if (pile.length > 0) {
+                pile[0].faceUp = true;
             }
         }
         
-        // 出牌：从牌堆中移除
-        pile.splice(cardIndex, 1);
-        
-        // 如果牌堆还有牌，将新的第一张翻开
-        if (pile.length > 0) {
-            pile[0].faceUp = true;
-        }
-        
         // 更新游戏状态
-        game.lastCard = card;
-        game.currentPlayer = 1 - playerIndex; // 切换玩家
-        game.skipped = false;
-        game.passes = 0;
+        game.lastPlay = {
+            type: playType,
+            cards: selectedCards
+        };
         
         // 检查是否获胜
         if (this.checkWin(playerIndex)) {
             game.winner = playerIndex;
             this.updateLeaderboard();
+            // 游戏结束，不切换玩家
+        } else {
+            game.currentPlayer = 1 - playerIndex; // 切换玩家
         }
+        
+        game.skipped = false;
+        game.passes = 0;
         
         this.updateActivity();
         return game;
@@ -189,11 +295,14 @@ class ThreePileGame extends AbstractGame {
         game.passes++;
         game.skipped = true;
         
-        // 如果连续两次不出牌，清空上一张牌
+        // 如果连续两次不出牌，清空上一轮出牌记录
         if (game.passes >= 2) {
-            game.lastCard = null;
+            game.lastPlay = null;
             game.passes = 0;
         }
+        
+        // 记录pass出牌类型
+        game.lastPlay = { type: 'pass' };
         
         // 切换回上一个玩家出牌
         game.currentPlayer = 1 - playerIndex;
@@ -252,6 +361,58 @@ class ThreePileGame extends AbstractGame {
 
     getGameName() {
         return this.gameName;
+    }
+
+    // 处理石头剪刀布选择
+    handleRockPaperScissorsAction(playerIndex, action) {
+        const game = this.gameState;
+        const { choice } = action; // choice: 'rock', 'paper', 'scissors'
+        
+        if (!['rock', 'paper', 'scissors'].includes(choice)) {
+            throw new Error('无效的选择，只能选择石头、剪刀、布');
+        }
+        
+        // 记录玩家选择
+        game.rockPaperScissors[`player${playerIndex}`] = choice;
+        
+        // 检查是否两个玩家都做出了选择
+        const player0Choice = game.rockPaperScissors.player0;
+        const player1Choice = game.rockPaperScissors.player1;
+        
+        if (player0Choice !== null && player1Choice !== null) {
+            // 两个玩家都选择了，比较结果
+            let winner = 0; // 默认玩家0胜利
+            
+            if (player0Choice === player1Choice) {
+                // 平局，随机决定先手
+                winner = Math.floor(Math.random() * 2);
+            } else if (
+                (player0Choice === 'rock' && player1Choice === 'scissors') ||
+                (player0Choice === 'paper' && player1Choice === 'rock') ||
+                (player0Choice === 'scissors' && player1Choice === 'paper')
+            ) {
+                // 玩家0胜利
+                winner = 0;
+            } else {
+                // 玩家1胜利
+                winner = 1;
+            }
+            
+            // 设置先手玩家和游戏阶段
+            game.rockPaperScissors.winner = winner;
+            game.currentPlayer = winner; // 胜利者先出牌
+            game.stage = 'playing'; // 切换到游戏阶段
+            game.gameStarted = true;
+            
+            // 设置回合提示
+            game.roundMessage = `${winner === 0 ? '玩家1' : '玩家2'} 在石头剪刀布中获胜，获得先手！`;
+        } else {
+            // 切换当前玩家，让另一位玩家选择
+            game.currentPlayer = 1 - playerIndex;
+        }
+        
+        this.updateActivity();
+        return game;
     }
 
     getClientState() {

@@ -7,24 +7,47 @@ const ThreePileGame = require('./games/ThreePileGame');
 
 // 创建HTTP服务器
 const server = http.createServer((req, res) => {
-    // 处理静态文件
-    const filePath = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);
+    // 处理静态文件 - 指向React构建目录
+    let filePath = path.join(__dirname, 'client/build', req.url);
+    if (req.url === '/' || req.url === '') {
+        filePath = path.join(__dirname, 'client/build/index.html');
+    }
+    
+    // 如果请求的文件不存在，则返回index.html（用于React路由）
     const extname = path.extname(filePath);
     const contentType = {
         '.html': 'text/html',
         '.js': 'application/javascript',
         '.css': 'text/css',
-        '.json': 'application/json'
+        '.json': 'application/json',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.eot': 'application/vnd.ms-fontobject'
     }[extname] || 'application/octet-stream';
 
     fs.readFile(filePath, (err, data) => {
         if (err) {
-            if (err.code === 'ENOENT') {
+            // 如果文件不存在，且不是API请求，则返回index.html
+            if (err.code === 'ENOENT' && !req.url.startsWith('/ws')) {
+                fs.readFile(path.join(__dirname, 'client/build/index.html'), (err2, data2) => {
+                    if (err2) {
+                        res.writeHead(404);
+                        res.end('File not found');
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'text/html' });
+                        res.end(data2);
+                    }
+                });
+            } else {
                 res.writeHead(404);
                 res.end('File not found');
-            } else {
-                res.writeHead(500);
-                res.end('Server error');
             }
         } else {
             res.writeHead(200, { 'Content-Type': contentType });

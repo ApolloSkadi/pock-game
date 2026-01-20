@@ -1,85 +1,271 @@
-# 翻牌对战游戏 - 部署指南
+# 翻牌对战游戏（React版） - 部署与PM2管理指南
 
-本指南将帮助您将翻牌对战游戏部署到服务器上，以便可以通过互联网访问。
+本指南帮助您将翻牌对战游戏部署到服务器，并使用PM2进行进程管理。
 
 ## 一、系统要求
 
-- Node.js 14.0 或更高版本
-- npm 6.0 或更高版本
-- 服务器需开放端口：3000（WebSocket）和可选的80/443（HTTP/HTTPS）
+### 基础环境
+- Node.js 16.0 或更高版本
+- npm 8.0 或更高版本
+- 服务器开放端口：3000（HTTP + WebSocket）
 
-## 二、本地测试部署
-
-### 1. 安装依赖
-```bash
-npm install
+### 项目结构
+```
+pock-old/
+├── server.js              # Node.js后端服务器（HTTP + WebSocket）
+├── games/                 # 游戏逻辑模块
+├── client/                # React前端应用
+│   ├── package.json      # React依赖
+│   ├── public/           # 静态资源
+│   └── src/              # React源代码
+└── client/build/         # React构建输出（部署时需要）
 ```
 
-### 2. 启动服务器
+## 二、PM2进程管理完整指南
+
+### 1. 安装PM2
 ```bash
-npm start
-# 或直接运行
-node server.js
-```
-
-### 3. 本地访问
-- 打开浏览器访问：`http://localhost:3000`
-- WebSocket 服务器运行在：`ws://localhost:3000`
-
-## 三、服务器部署（Linux/Ubuntu）
-
-### 1. 将项目上传到服务器
-```bash
-# 使用 scp 或 sftp 上传文件
-scp -r . user@your-server-ip:/opt/pock-game/
-```
-
-### 2. 登录服务器并安装依赖
-```bash
-ssh user@your-server-ip
-cd /opt/pock-game
-npm install
-```
-
-### 3. 使用 PM2 管理进程（推荐）
-```bash
-# 安装 PM2
+# 全局安装PM2
 npm install -g pm2
 
-# 使用 PM2 启动应用
+# 验证安装
+pm2 --version
+```
+
+### 2. 使用PM2管理项目
+
+#### 启动项目
+```bash
+# 启动服务器（在项目根目录执行）
 pm2 start server.js --name "pock-game"
 
-# 设置开机自启动
+# 或指定端口和日志文件
+pm2 start server.js --name "pock-game" -- --port 3000
+
+# 启动并设置日志
+pm2 start server.js --name "pock-game" --log pock-game.log --error pock-game-error.log
+```
+
+#### 查看项目状态
+```bash
+# 查看所有进程
+pm2 list
+
+# 查看特定进程
+pm2 info pock-game
+
+# 查看实时日志
+pm2 logs pock-game
+
+# 查看最近日志（不带实时流）
+pm2 logs pock-game --lines 100
+```
+
+#### 停止项目
+```bash
+# 停止单个项目
+pm2 stop pock-game
+
+# 停止所有项目
+pm2 stop all
+```
+
+#### 重启项目
+```bash
+# 重启单个项目
+pm2 restart pock-game
+
+# 重启所有项目
+pm2 restart all
+```
+
+#### 删除项目
+```bash
+# 从PM2列表中删除（不会停止进程）
+pm2 delete pock-game
+
+# 停止并删除
+pm2 stop pock-game && pm2 delete pock-game
+```
+
+#### 设置开机自启
+```bash
+# 生成启动脚本
+pm2 startup
+
+# 保存当前进程列表
+pm2 save
+
+# 取消开机自启
+pm2 unstartup
+```
+
+### 3. PM2高级管理
+
+#### 监控仪表板
+```bash
+# 启动PM2监控界面
+pm2 monit
+```
+
+#### 进程集群模式（多核CPU）
+```bash
+# 启动集群模式（自动负载均衡）
+pm2 start server.js -i max --name "pock-game-cluster"
+```
+
+#### 环境变量管理
+```bash
+# 使用环境变量启动
+pm2 start server.js --name "pock-game" --env production
+
+# 通过配置文件设置环境变量
+pm2 ecosystem
+```
+
+#### 性能监控
+```bash
+# 查看资源使用情况
+pm2 show pock-game
+
+# 生成性能报告
+pm2 report
+```
+
+### 4. 常见PM2问题解决
+
+#### 进程意外停止
+```bash
+# 查看进程退出原因
+pm2 logs pock-game --lines 50
+
+# 自动重启（崩溃时）
+pm2 start server.js --name "pock-game" --watch --max-memory-restart 200M
+```
+
+#### 内存泄漏监控
+```bash
+# 设置内存限制自动重启
+pm2 start server.js --name "pock-game" --max-memory-restart 300M
+
+# 监控内存使用
+pm2 monit
+```
+
+#### 日志管理
+```bash
+# 清空日志
+pm2 flush pock-game
+
+# 设置日志轮转（需要安装pm2-logrotate）
+pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 10M
+pm2 set pm2-logrotate:retain 30
+```
+
+## 三、完整部署流程
+
+### 步骤1：准备服务器环境
+```bash
+# 更新系统
+sudo apt update && sudo apt upgrade -y
+
+# 安装Node.js（如果未安装）
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# 验证安装
+node --version
+npm --version
+```
+
+### 步骤2：上传项目到服务器
+```bash
+# 使用SCP上传（本地执行）
+scp -r ./ user@your-server-ip:/opt/pock-game/
+
+# 或使用Git（服务器上执行）
+git clone https://github.com/your-repo/pock-game.git /opt/pock-game
+cd /opt/pock-game
+```
+
+### 步骤3：安装项目依赖
+```bash
+# 在项目根目录执行
+npm install
+
+# 安装React客户端依赖
+cd client
+npm install
+cd ..
+```
+
+### 步骤4：构建React应用
+```bash
+# 进入client目录并构建
+cd client
+npm run build
+
+# 返回根目录
+cd ..
+```
+
+**注意**：如果系统未安装npm，可以跳过构建步骤，使用预生成的基本页面。
+```bash
+# 创建基本构建目录
+mkdir -p client/build
+echo '<!DOCTYPE html><html><head><title>扑克游戏</title></head><body><h1>游戏正在构建中...</h1></body></html>' > client/build/index.html
+```
+
+### 步骤5：使用PM2启动服务
+```bash
+# 全局安装PM2（如果未安装）
+npm install -g pm2
+
+# 启动服务器
+pm2 start server.js --name "pock-game" --log pock-game.log --error pock-game-error.log
+
+# 设置开机自启
 pm2 startup
 pm2 save
 ```
 
-### 4. 配置防火墙
+### 步骤6：配置防火墙
 ```bash
-# 开放端口 3000
+# 开放3000端口
 sudo ufw allow 3000/tcp
 sudo ufw reload
+
+# 查看端口状态
+sudo ufw status
 ```
 
-### 5. 访问游戏
-- 通过浏览器访问：`http://your-server-ip:3000`
-- WebSocket 地址：`ws://your-server-ip:3000`
-
-## 四、使用 Nginx 反向代理（支持 HTTPS）
-
-### 1. 安装 Nginx
+### 步骤7：验证部署
 ```bash
-sudo apt update
-sudo apt install nginx
+# 检查PM2状态
+pm2 status
+
+# 检查服务是否运行
+curl -I http://localhost:3000
+
+# 检查WebSocket连接
+# 可以使用浏览器访问 http://服务器IP:3000 测试
 ```
 
-### 2. 配置 Nginx
-创建配置文件 `/etc/nginx/sites-available/pock-game`：
+## 四、Nginx反向代理配置（HTTPS支持）
+
+### 1. 安装Nginx
+```bash
+sudo apt install nginx -y
+```
+
+### 2. 创建Nginx配置文件
+`/etc/nginx/sites-available/pock-game`：
 ```nginx
 server {
     listen 80;
     server_name your-domain.com; # 替换为您的域名
-
+    
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -93,274 +279,206 @@ server {
 }
 ```
 
-### 3. 启用站点并重启 Nginx
+### 3. 启用配置
 ```bash
 sudo ln -s /etc/nginx/sites-available/pock-game /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-### 4. 配置 HTTPS（可选但推荐）
-使用 Let's Encrypt 免费 SSL 证书：
+### 4. 配置SSL证书
 ```bash
 sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d your-domain.com
 ```
 
-## 五、云服务部署
+## 五、内网穿透方案（无公网IP）
 
-### 1. Heroku 部署
+### 方案1：ngrok（最简单）
 ```bash
-# 创建 Procfile
-echo "web: node server.js" > Procfile
+# 本地安装ngrok
+# 访问 https://ngrok.com 注册获取token
 
-# 登录 Heroku
-heroku login
-
-# 创建应用
-heroku create your-app-name
-
-# 部署
-git push heroku main
-
-# 打开应用
-heroku open
-```
-
-### 2. Vercel 部署
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
-
-# 部署
-vercel
-```
-
-## 六、内网穿透方案（无需服务器）
-
-### 1. 使用 ngrok（最简单）
-```bash
-# 安装 ngrok
-# 访问 https://ngrok.com 注册并获取 token
-
-# 启动本地服务器
+# 启动本地服务
 npm start
 
-# 在新的终端中运行（确保 ngrok 已安装）
+# 内网穿透（新终端）
 ngrok http 3000
+# 分享生成的https URL即可
 ```
 
-ngrok 会生成一个公共 URL（如 `https://abc123.ngrok.io`），分享此链接给其他玩家即可。
-
-### 2. 使用 Cloudflare Tunnel
+### 方案2：Cloudflare Tunnel
 ```bash
-# 安装 cloudflared
+# 安装cloudflared
 # 参考：https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide/
 
-# 创建隧道
 cloudflared tunnel create pock-game
-
-# 配置隧道
-# 编辑配置文件，将本地 3000 端口映射到公网
-
-# 运行隧道
 cloudflared tunnel run pock-game
 ```
 
-### 3. 使用 frp（自行搭建）
-适合有 VPS 的用户，配置较复杂但更灵活。
+### 方案3：frp（自建服务器）
+需要一台有公网IP的VPS，配置较复杂但稳定。
 
-## 七、Docker 部署
+## 六、项目维护指南
 
-### 1. 创建 Dockerfile
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install --only=production
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
-```
-
-### 2. 构建和运行
+### 1. 日常维护命令
 ```bash
-docker build -t pock-game .
-docker run -p 3000:3000 -d pock-game
-```
+# 查看服务状态
+pm2 status
 
-### 3. Docker Compose 示例
-```yaml
-version: '3.8'
-services:
-  pock-game:
-    build: .
-    ports:
-      - "3000:3000"
-    restart: always
-```
-
-## 八、访问游戏和联机
-
-### 1. 单机访问
-- 直接访问部署后的 URL
-
-### 2. 联机对战
-- **两位玩家需要连接到相同的服务器地址**
-- 第一位玩家进入后等待，第二位玩家进入后游戏自动开始
-- 确保网络环境允许 WebSocket 连接（某些企业网络可能限制）
-
-### 3. 测试连接
-- 打开浏览器开发者工具，查看 Console 是否有连接错误
-- 确认 WebSocket 连接状态为 "OPEN"
-
-## 九、故障排除
-
-### 常见问题 1：无法连接 WebSocket 或显示 "Upgrade Required"
-- **原因**：旧版服务器只处理 WebSocket 连接，不提供 HTTP 服务
-- **解决方案**：确保使用最新的 server.js（已包含 HTTP 静态文件服务）
-- 检查防火墙是否开放端口 3000
-- 确认服务器安全组规则允许入站连接
-- 如果是 HTTPS 站点，确保 WebSocket 使用 wss:// 协议
-- **验证方法**：直接访问 `http://你的域名:3000` 应该能看到游戏界面
-
-### 常见问题 2：玩家无法互相看到
-- 确保两位玩家连接到相同的服务器 URL
-- 检查服务器日志是否有错误信息
-- 确认没有超过最大玩家数（当前设置为 2 人）
-
-### 常见问题 3：游戏卡住
-- 刷新页面重新连接
-- 检查网络延迟
-- 查看服务器控制台是否有错误输出
-
-## 十、维护和更新
-
-### 1. 更新代码
-```bash
-git pull origin main
-npm install
-pm2 restart pock-game
-```
-
-### 2. 查看日志
-```bash
+# 查看实时日志
 pm2 logs pock-game
-# 或直接查看
-tail -f server.log
+
+# 重启服务（更新后）
+pm2 restart pock-game
+
+# 停止服务（维护时）
+pm2 stop pock-game
 ```
 
-### 3. 备份数据
-游戏数据目前存储在内存中，重启服务器会重置。如需持久化存储，可修改 server.js 中的 `leaderboard` 数组为数据库存储。
+### 2. 更新项目代码
+```bash
+# 拉取最新代码
+git pull origin main
 
-## 十一、安全注意事项
+# 更新依赖
+npm install
+cd client && npm install && npm run build && cd ..
 
-1. **使用 HTTPS**：生产环境务必启用 HTTPS，保护数据传输安全
-2. **限制访问**：可通过 Nginx 配置 IP 白名单
-3. **定期更新**：保持 Node.js 和依赖包更新到最新版本
-4. **监控资源**：监控服务器 CPU、内存和网络使用情况
+# 重启服务
+pm2 restart pock-game
 
-## 十二、联系和支持
+# 查看更新日志
+pm2 logs pock-game --lines 50
+```
 
-如有部署问题，请检查：
-- 服务器是否正常运行：`systemctl status nginx` 或 `pm2 status`
-- 端口是否开放：`netstat -tulpn | grep 3000`
-- 防火墙设置：`sudo ufw status`
+### 3. 备份与恢复
+```bash
+# 备份项目目录
+tar -czf pock-game-backup-$(date +%Y%m%d).tar.gz /opt/pock-game
+
+# 备份PM2配置
+pm2 save
+
+# 恢复项目
+tar -xzf pock-game-backup-20250120.tar.gz -C /
+pm2 resurrect
+```
+
+### 4. 性能监控
+```bash
+# 查看资源使用
+pm2 monit
+
+# 生成系统报告
+pm2 report
+
+# 设置资源限制
+pm2 start server.js --name "pock-game" --max-memory-restart 300M
+```
+
+## 七、故障排除
+
+### 1. PM2相关问题
+```bash
+# PM2进程消失
+pm2 resurrect
+
+# 日志文件过大
+pm2 flush pock-game
+pm2 install pm2-logrotate
+
+# 服务无法启动
+pm2 delete pock-game
+pm2 start server.js --name "pock-game" --watch
+```
+
+### 2. 部署问题
+- **端口占用**：`sudo lsof -i :3000` 查看占用进程
+- **权限问题**：确保Node.js有读取项目文件的权限
+- **内存不足**：增加虚拟内存或优化代码
+
+### 3. 连接问题
+- **无法访问**：检查防火墙和安全组规则
+- **WebSocket失败**：确保代理配置正确（Nginx需要WebSocket支持）
+- **跨域问题**：server.js已配置CORS，无需额外设置
+
+### 4. 游戏功能问题
+- **房间无法创建**：检查WebSocket连接状态
+- **玩家无法加入**：确保两位玩家连接相同服务器
+- **游戏卡住**：重启服务或刷新页面
+
+## 八、安全建议
+
+1. **使用HTTPS**：生产环境务必启用SSL
+2. **防火墙配置**：仅开放必要端口（3000, 80, 443）
+3. **定期更新**：保持Node.js和npm版本更新
+4. **监控日志**：定期检查PM2日志，发现异常行为
+5. **备份配置**：定期备份PM2配置和项目文件
+
+## 九、快速参考命令
+
+### PM2常用命令
+```bash
+# 启动
+pm2 start server.js --name "pock-game"
+
+# 停止
+pm2 stop pock-game
+
+# 重启
+pm2 restart pock-game
+
+# 删除
+pm2 delete pock-game
+
+# 日志
+pm2 logs pock-game
+
+# 状态
+pm2 status
+```
+
+### 系统管理命令
+```bash
+# 查看进程
+ps aux | grep node
+
+# 查看端口
+netstat -tulpn | grep :3000
+
+# 强制终止进程
+kill -9 $(lsof -t -i:3000)
+
+# 查看系统资源
+htop
+```
+
+### 项目维护命令
+```bash
+# 构建React应用
+cd client && npm run build && cd ..
+
+# 安装依赖
+npm install && cd client && npm install && cd ..
+
+# 测试运行
+node server.js
+```
+
+## 十、支持与联系
+
+如果遇到问题，请按以下步骤排查：
+1. 检查PM2状态：`pm2 status`
+2. 查看错误日志：`pm2 logs pock-game --lines 100`
+3. 验证端口是否开放：`curl -I http://localhost:3000`
+4. 检查系统资源：`free -h` 和 `df -h`
+
+**部署成功标志**：
+- PM2显示pock-game状态为online
+- 浏览器访问服务器IP:3000显示游戏界面
+- 两个不同网络的玩家可以创建/加入房间并开始游戏
 
 ---
 
-**部署成功标志**：两位不同网络的玩家可以访问相同 URL 并开始游戏对局，游戏结束后排行榜正常更新。
-
-## 十三、关于 "Upgrade Required" 错误
-
-### 错误原因
-当使用旧版 server.js（仅 WebSocket 服务器）时，通过 HTTP 访问会收到 "Upgrade Required" 响应，因为服务器只接受 WebSocket 连接升级请求。
-
-### 解决方案
-1. **使用最新版 server.js**：当前版本已包含完整的 HTTP 服务器，可同时提供：
-   - 静态文件服务（HTML、CSS、JS）
-   - WebSocket 游戏连接
-
-2. **验证部署**：
-   ```bash
-   # 启动服务器
-   node server.js
-   
-   # 在浏览器访问
-   curl http://localhost:3000
-   # 应该返回 HTML 页面内容
-   ```
-
-3. **内网穿透注意事项**：
-   - ngrok 等工具会自动处理 HTTP/WebSocket 协议转换
-   - 确保穿透的是 HTTP 端口（3000），而不是单纯的 WebSocket 端口
-   - 如果使用 HTTPS，WebSocket 会自动升级为 WSS 协议
-
-### 快速测试
-1. 本地测试：`http://localhost:3000` 应该显示游戏界面
-2. 远程测试：通过内网穿透 URL 访问应该显示相同界面
-3. 连接测试：打开浏览器开发者工具，查看 Console 中 WebSocket 连接状态
-
-## 十四、房间系统使用指南
-
-### 1. 创建房间
-1. 打开游戏页面，在"创建房间"部分输入昵称
-2. 点击"创建房间"按钮
-3. 系统会生成4位数字房间码（如：1234）
-4. 将房间码分享给好友
-
-### 2. 加入房间
-1. 打开游戏页面，在"加入房间"部分输入昵称和房间码
-2. 点击"加入房间"按钮
-3. 等待房主开始游戏
-
-### 3. 游戏流程
-- 房间满2人后游戏自动开始
-- 每位玩家有5张牌，依次进行5个回合的猜测
-- 每回合根据提示猜测自己的牌
-- 猜错则牌进入惩罚堆，并补充新牌
-- 五回合后比较双方惩罚牌数量，少者胜利
-- 游戏结束后可点击"重新开始"再次对战
-
-### 4. 手机适配说明
-- 游戏已全面适配移动设备
-- 支持触摸操作，按钮尺寸适合手指点击
-- 横屏和竖屏自动调整布局
-- 卡片和按钮在手机上会适当缩小以确保可见性
-
-### 5. 无需Node.js的测试方法
-如果本地没有Node.js环境，可以使用以下方法测试：
-
-**方法一：使用在线演示（如已部署）**
-1. 访问已部署的游戏URL
-2. 在两个不同的浏览器或设备上打开
-3. 创建房间并加入，测试联机功能
-
-**方法二：使用ngrok（需要安装ngrok）**
-```bash
-# 如果有Node.js环境
-npm install
-node server.js
-
-# 另一个终端运行
-ngrok http 3000
-# 分享ngrok生成的URL给其他设备测试
-```
-
-**方法三：直接文件测试（仅测试界面）**
-1. 直接双击打开 `public/index.html` 文件
-2. 可以测试房间选择界面和UI适配
-3. 注意：直接文件打开时WebSocket连接会失败，需要服务器环境
-
-### 6. 故障排除
-- **无法创建/加入房间**：检查WebSocket连接状态，确保服务器运行
-- **游戏卡住**：刷新页面重新连接
-- **手机显示异常**：检查是否使用最新版浏览器，清除缓存
-- **房间人数不足**：确保两位玩家都成功加入同一房间
-
-**最低配置**：1核 CPU，1GB 内存，10GB 存储空间即可运行。
+**注意**：本项目使用React前端 + Node.js后端，需要构建React应用才能获得完整功能。如果只使用基础HTML页面，部分交互功能可能受限。

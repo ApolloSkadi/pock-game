@@ -20,7 +20,7 @@ function MainContent() {
   return (
     <div className="main-content">
       <header className="app-header">
-        <h1>扑克对战游戏 - React版</h1>
+        <h1>扑克对战游戏</h1>
         <p>实时联机对战，支持翻牌对战和三堆出牌</p>
       </header>
       
